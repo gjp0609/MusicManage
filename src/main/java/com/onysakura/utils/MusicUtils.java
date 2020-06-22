@@ -8,7 +8,9 @@ import com.onysakura.model.Music;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.logging.Logger;
 
 public class MusicUtils {
@@ -39,8 +41,8 @@ public class MusicUtils {
     }
 
     public static void analyze163List() throws Exception {
-        File file = new File("C:\\Users\\gjp06\\IdeaProjects\\MusicManage\\src\\main\\resources\\jp.json");
-        BufferedReader reader = new BufferedReader(new FileReader(file));
+        Path path = Paths.get("src", "main", "resources", "jp.json");
+        BufferedReader reader = Files.newBufferedReader(path);
         String line = reader.readLine();
         JSONObject jsonObject = JSON.parseObject(line);
         JSONObject playlist = jsonObject.getJSONObject("playlist");

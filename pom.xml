@@ -56,7 +56,7 @@
                 <artifactId>javafx-maven-plugin</artifactId>
                 <version>0.0.4</version>
                 <configuration>
-                    <mainClass>ManagerStater</mainClass>
+                    <mainClass>com.onysakura.Main</mainClass>
                 </configuration>
             </plugin>
         </plugins>
