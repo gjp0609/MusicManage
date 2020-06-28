@@ -8,11 +8,9 @@ import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Logger;
 
 public class SnowflakeTest {
     private static final CustomLogger.Log LOG = CustomLogger.getLogger(SnowflakeTest.class);
-
 
     @Test
     public void test() throws InterruptedException {
