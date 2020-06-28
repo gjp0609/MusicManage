@@ -1,5 +1,7 @@
 package com.onysakura.utils;
 
+import com.onysakura.constans.Properties;
+
 import java.io.IOException;
 import java.util.Date;
 import java.util.logging.*;
@@ -7,8 +9,9 @@ import java.util.logging.*;
 public class CustomLogger {
 
     private static final int CLASS_NAME_LENGTH_LIMIT = 30;
+    private static final boolean IS_SAVE_LOG_FILE = false;
 
-    public static Logger getLogger(Class<?> loggerName) {
+    public static Log getLogger(Class<?> loggerName) {
         Logger logger = Logger.getLogger(loggerName.getName());
         logger.setUseParentHandlers(false);
         logger.setLevel(Level.ALL);
@@ -26,15 +29,41 @@ public class CustomLogger {
         consoleHandler.setFormatter(formatter);
         consoleHandler.setLevel(Level.ALL);
         logger.addHandler(consoleHandler);
-        try {
-            FileHandler fileHandler = new FileHandler("./" + DateUtils.format(new Date(), DateUtils.YYYYMMDDHHMMSS) + ".log");
-            fileHandler.setFormatter(formatter);
-            fileHandler.setLevel(Level.ALL);
-            logger.addHandler(fileHandler);
-        } catch (IOException e) {
-            e.printStackTrace();
+        if (IS_SAVE_LOG_FILE) {
+            try {
+                FileHandler fileHandler = new FileHandler(Properties.FILE_PATH + "/" + DateUtils.format(new Date(), DateUtils.YYYYMMDDHHMMSS) + ".log");
+                fileHandler.setFormatter(formatter);
+                fileHandler.setLevel(Level.ALL);
+                logger.addHandler(fileHandler);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
-        return logger;
+        return new Log(logger);
+    }
+
+    public static class Log {
+        private final Logger logger;
+
+        public Log(Logger logger) {
+            this.logger = logger;
+        }
+
+        public void debug(Object msg) {
+            logger.fine(String.valueOf(msg));
+        }
+
+        public void info(Object msg) {
+            logger.info(String.valueOf(msg));
+        }
+
+        public void warn(Object msg) {
+            logger.warning(String.valueOf(msg));
+        }
+
+        public void error(Object msg) {
+            logger.severe(String.valueOf(msg));
+        }
     }
 
     private static String getLevel(Level level) {
@@ -54,7 +83,7 @@ public class CustomLogger {
         return String.format("%" + CustomLogger.CLASS_NAME_LENGTH_LIMIT + "s", className.substring(className.lastIndexOf(".") + 1));
     }
 
-    public static String getColor(Level level) {
+    private static String getColor(Level level) {
         return switch (level.getName()) {
             case "SEVERE" -> "\033[31m";
             case "WARNING" -> "\033[33m";

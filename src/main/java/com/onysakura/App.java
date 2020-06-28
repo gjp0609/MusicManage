@@ -12,11 +12,10 @@ import javafx.stage.Stage;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.logging.Logger;
 
 public class App extends Application {
 
-    private static final Logger LOG = CustomLogger.getLogger(App.class);
+    private static final CustomLogger.Log LOG = CustomLogger.getLogger(App.class);
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -29,7 +28,7 @@ public class App extends Application {
         root.getChildren().add(btn);
 
         ListView<String> list = new ListView<>();
-        ObservableList<String> items = FXCollections.observableArrayList (
+        ObservableList<String> items = FXCollections.observableArrayList(
                 "Single", "Double", "Suite", "Family App");
         list.setItems(items);
         root.getChildren().add(list);

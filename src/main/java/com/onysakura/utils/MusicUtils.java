@@ -4,27 +4,28 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.onysakura.constans.FileType;
-import com.onysakura.model.Music;
+import com.onysakura.model.MusicLocal;
+import com.onysakura.repository.MusicRepository;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.logging.Logger;
+import java.util.List;
 
 public class MusicUtils {
-    private static final Logger LOG = CustomLogger.getLogger(FileUtils.class);
+    private static final CustomLogger.Log LOG = CustomLogger.getLogger(FileUtils.class);
 
-    public static Music getMusicInfo(File file) {
+    public static MusicLocal getMusicInfo(File file) {
         if (file != null) {
-            Music music = new Music();
-            music.setName(file.getName());
-            music.setSize(file.length());
-            music.setPath(file.getAbsolutePath());
-            music.setMd5(FileUtils.getMD5(file));
-            music.setType(getFileType(file));
-            return music;
+            MusicLocal musicLocal = new MusicLocal();
+            musicLocal.setName(file.getName());
+            musicLocal.setSize(String.valueOf(file.length()));
+            musicLocal.setPath(file.getAbsolutePath());
+            musicLocal.setMd5(FileUtils.getMD5(file));
+            musicLocal.setType(getFileType(file).toString());
+            return musicLocal;
         }
         return null;
     }
@@ -34,7 +35,10 @@ public class MusicUtils {
             String name = file.getName();
             int index = name.lastIndexOf('.');
             if (index > 0 && index - 1 != name.length()) {
-                return FileType.getType(name.substring(index + 1));
+                FileType fileType = FileType.getType(name.substring(index + 1));
+                if (fileType != null) {
+                    return fileType;
+                }
             }
         }
         return FileType.OTHERS;
@@ -57,6 +61,14 @@ public class MusicUtils {
     }
 
     public static void main(String[] args) throws Exception {
-        analyze163List();
+        MusicRepository musicRepository = MusicRepository.getInstance();
+        List<MusicLocal> list = musicRepository.selectAll();
+        LOG.info(JSON.toJSONString(list));
+        MusicLocal local = new MusicLocal();
+        local.setName("3");
+        list = musicRepository.select(local);
+        LOG.info(JSON.toJSONString(list));
+        int delete = musicRepository.delete("726811370237984768");
+        LOG.info(delete);
     }
 }

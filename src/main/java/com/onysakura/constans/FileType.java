@@ -25,6 +25,6 @@ public enum FileType {
                 return fileType;
             }
         }
-        return FileType.OTHERS;
+        return null;
     }
 }

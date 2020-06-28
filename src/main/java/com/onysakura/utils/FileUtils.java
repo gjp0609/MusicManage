@@ -7,10 +7,9 @@ import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Logger;
 
 public class FileUtils {
-    private static final Logger LOG = CustomLogger.getLogger(FileUtils.class);
+    private static final CustomLogger.Log LOG = CustomLogger.getLogger(FileUtils.class);
 
     public static List<File> getFileList(File file) {
         List<File> list = new ArrayList<>();
@@ -37,7 +36,7 @@ public class FileUtils {
             BigInteger bi = new BigInteger(1, b);
             return bi.toString(16);
         } catch (Exception e) {
-            LOG.warning("Get File MD5 Fail, " + e.getMessage());
+            LOG.warn("Get File MD5 Fail, " + e.getMessage());
         }
         return null;
     }

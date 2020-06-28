@@ -3,19 +3,15 @@ package com.onysakura;
 import com.onysakura.utils.CustomLogger;
 import org.junit.jupiter.api.Test;
 
-import java.util.logging.Logger;
-
 public class LoggerTest {
-    Logger logger = CustomLogger.getLogger(LoggerTest.class);
+    CustomLogger.Log logger = CustomLogger.getLogger(LoggerTest.class);
 
     @Test
     public void testOut() {
-        logger.severe("severe");
-        logger.warning("warning");
+        logger.error("error");
+        logger.warn("warn");
         logger.info("info");
-        logger.fine("fine");
-        logger.finer("finer");
-        logger.finest("finest");
+        logger.debug("debug");
     }
 
     @Test

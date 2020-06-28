@@ -1,0 +1,245 @@
+package com.onysakura.repository;
+
+import com.onysakura.model.TableName;
+import com.onysakura.utils.CustomLogger;
+import com.onysakura.utils.StringUtils;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
+public class BaseRepository<T> {
+
+    private static final CustomLogger.Log LOG = CustomLogger.getLogger(BaseRepository.class);
+
+    private final String tableName;
+    private final String[] fieldNames;
+
+    @SuppressWarnings({"unchecked"})
+    public Class<T> getModelClass() {
+        Type type = getClass().getGenericSuperclass();
+        if (type instanceof ParameterizedType) {
+            Type[] ptype = ((ParameterizedType) type).getActualTypeArguments();
+            return (Class<T>) ptype[0];
+        } else {
+            return null;
+        }
+    }
+
+    public BaseRepository() {
+        Class<T> modelClass = getModelClass();
+        Field[] fields = modelClass.getDeclaredFields();
+        fieldNames = new String[fields.length];
+        for (int i = 0; i < fields.length; i++) {
+            fieldNames[i] = StringUtils.humpToUnderline(fields[i].getName());
+        }
+        TableName tableName = modelClass.getAnnotation(TableName.class);
+        this.tableName = tableName.value();
+        createTable();
+    }
+
+    public void createTable() {
+        String sql = "CREATE TABLE IF NOT EXISTS $TABLE_NAME ($CONTENT);";
+        StringBuilder content = new StringBuilder();
+        for (String fieldName : fieldNames) {
+            if ("ID".equalsIgnoreCase(fieldName)) {
+                content.append(" TEXT PRIMARY KEY NOT NULL, ");
+            } else {
+                content.append(fieldName).append(" TEXT, ");
+            }
+        }
+        sql = sql.replace("$TABLE_NAME", this.tableName)
+                .replace("$CONTENT", content.toString().substring(0, content.length() - 2));
+        LOG.debug("create table sql: " + sql);
+        int i = SQLite.executeUpdate(sql);
+        if (i >= 0) {
+            LOG.debug("create table " + this.tableName + " successfully");
+        } else {
+            LOG.warn("create table fail");
+        }
+    }
+
+    public List<T> selectAll() {
+        String sql = "SELECT * FROM $TABLE_NAME;";
+        sql = sql.replace("$TABLE_NAME", tableName);
+        LOG.debug("select sql: " + sql);
+        ResultSet resultSet = SQLite.executeQuery(sql);
+        Class<T> modelClass = getModelClass();
+        return getResultList(resultSet, modelClass);
+    }
+
+    public List<T> select(T model) {
+        Class<T> modelClass = getModelClass();
+        String sql = "SELECT * FROM $TABLE_NAME WHERE $QUERIES;";
+        StringBuilder queries = new StringBuilder();
+        boolean hasQueries = false;
+        for (String fieldName : fieldNames) {
+            try {
+                Method method = modelClass.getDeclaredMethod(generateGetMethodName(fieldName));
+                Object invoke = method.invoke(model);
+                if (invoke != null) {
+                    hasQueries = true;
+                    queries.append(fieldName).append(" = '").append(invoke.toString()).append("', ");
+                }
+            } catch (ReflectiveOperationException e) {
+                e.printStackTrace();
+            }
+        }
+        if (hasQueries) {
+            sql = sql.replace("$TABLE_NAME", tableName)
+                    .replace("$QUERIES", queries.toString().substring(0, queries.length() - 2));
+            LOG.debug("select sql: " + sql);
+            ResultSet resultSet = SQLite.executeQuery(sql);
+            return getResultList(resultSet, modelClass);
+        } else {
+            return selectAll();
+        }
+    }
+
+    public T insert(T t) {
+        String info = null;
+        try {
+            Method toString = t.getClass().getMethod("toString");
+            Object invoke = toString.invoke(t);
+            if (invoke != null) {
+                info = invoke.toString();
+            }
+        } catch (Exception ignored) {
+        }
+        LOG.debug("insert " + (info == null ? t.getClass().getName() : info));
+        String sql = "INSERT INTO $TABLE_NAME ($FIELDS) VALUES ($VALUES);";
+        Class<T> modelClass = getModelClass();
+        StringBuilder fields = new StringBuilder();
+        StringBuilder values = new StringBuilder();
+        try {
+            Method setId = modelClass.getDeclaredMethod("setId", String.class);
+            setId.invoke(t, StringUtils.getNextId());
+            for (String fieldName : fieldNames) {
+                fields.append(fieldName).append(", ");
+                String methodName = generateGetMethodName(fieldName);
+                Method method = modelClass.getMethod(methodName);
+                Object invoke = method.invoke(t);
+                if (invoke == null) {
+                    values.append("NULL, ");
+                } else {
+                    values.append("'").append(invoke.toString()).append("', ");
+                }
+            }
+        } catch (Exception e) {
+            LOG.warn("insert fail, message: " + e.getMessage());
+            e.printStackTrace();
+        }
+        sql = sql.replace("$TABLE_NAME", tableName)
+                .replace("$FIELDS", fields.toString().substring(0, fields.length() - 2))
+                .replace("$VALUES", values.toString().substring(0, values.length() - 2));
+        LOG.debug("insert sql: " + sql);
+        int update = SQLite.executeUpdate(sql);
+        if (update >= 0) {
+            return t;
+        } else {
+            return null;
+        }
+    }
+
+    public T update(T t) {
+        String info = null;
+        try {
+            Method toString = t.getClass().getMethod("toString");
+            Object invoke = toString.invoke(t);
+            if (invoke != null) {
+                info = invoke.toString();
+            }
+        } catch (Exception ignored) {
+        }
+        LOG.debug("update " + (info == null ? t.getClass().getName() : info));
+        String sql = "UPDATE $TABLE_NAME SET $VALUES WHERE ID = $ID;";
+        Class<T> modelClass = getModelClass();
+        StringBuilder values = new StringBuilder();
+        String id = null;
+        try {
+            Method setId = modelClass.getDeclaredMethod("getId");
+            Object idObject = setId.invoke(t);
+            if (idObject != null) {
+                id = idObject.toString();
+                for (String fieldName : fieldNames) {
+                    String methodName = generateGetMethodName(fieldName);
+                    Method method = modelClass.getMethod(methodName);
+                    Object invoke = method.invoke(t);
+                    String value;
+                    if (invoke != null && !"ID".equalsIgnoreCase(fieldName)) {
+                        value = invoke.toString();
+                        values.append(fieldName).append(" = '").append(value).append("', ");
+                    }
+                }
+            }
+        } catch (Exception e) {
+            LOG.warn("execute sql fail, message: " + e.getMessage());
+            e.printStackTrace();
+        }
+        if (id != null) {
+            sql = sql.replace("$TABLE_NAME", tableName)
+                    .replace("$ID", id)
+                    .replace("$VALUES", values.toString().substring(0, values.length() - 2));
+            LOG.debug("update sql: " + sql);
+            int update = SQLite.executeUpdate(sql);
+            if (update >= 0) {
+                return t;
+            } else {
+                return null;
+            }
+        } else {
+            LOG.warn("update fail, no id value");
+            return null;
+        }
+    }
+
+    public int delete(String id) {
+        String sql = "DELETE FROM $TABLE_NAME WHERE ID = $ID;";
+        sql = sql.replace("$TABLE_NAME", tableName)
+                .replace("$ID", id);
+        LOG.debug("delete sql: " + sql);
+        return SQLite.executeUpdate(sql);
+    }
+
+    private List<T> getResultList(ResultSet resultSet, Class<T> modelClass) {
+        List<T> list = new ArrayList<>();
+        if (resultSet != null) {
+            try {
+                while (resultSet.next()) {
+                    T t = modelClass.getDeclaredConstructor().newInstance();
+                    for (String fieldName : fieldNames) {
+                        String resultString = resultSet.getString(fieldName);
+                        String setMethodName = generateSetMethodName(fieldName);
+                        Method method = modelClass.getDeclaredMethod(setMethodName, String.class);
+                        method.invoke(t, resultString);
+                    }
+                    list.add(t);
+                }
+            } catch (SQLException | ReflectiveOperationException e) {
+                e.printStackTrace();
+                LOG.warn("get result list fail, " + e.getMessage());
+            }
+        }
+        LOG.debug("select result size: " + list.size());
+        return list;
+    }
+
+    private String generateGetMethodName(String fieldName) {
+        String name = StringUtils.underlineToHump(fieldName);
+        char c = name.charAt(0);
+        String firstChar = String.valueOf(c);
+        return "get" + firstChar.toUpperCase() + name.substring(1);
+    }
+
+    private String generateSetMethodName(String fieldName) {
+        String name = StringUtils.underlineToHump(fieldName);
+        char c = name.charAt(0);
+        String firstChar = String.valueOf(c);
+        return "set" + firstChar.toUpperCase() + name.substring(1);
+    }
+}
