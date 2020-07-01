@@ -1,5 +1,6 @@
 package com.onysakura;
 
+import com.onysakura.fx.App;
 import javafx.application.Application;
 
 public class Main {
