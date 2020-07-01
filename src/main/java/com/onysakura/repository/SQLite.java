@@ -1,11 +1,10 @@
 package com.onysakura.repository;
 
-import com.alibaba.fastjson.JSON;
-import com.onysakura.constans.Properties;
 import com.onysakura.utils.CustomLogger;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.*;
-import java.util.logging.Logger;
 
 public class SQLite {
     private static final CustomLogger.Log LOG = CustomLogger.getLogger(SQLite.class);
@@ -16,7 +15,8 @@ public class SQLite {
     static {
         try {
             Class.forName("org.sqlite.JDBC");
-            c = DriverManager.getConnection("jdbc:sqlite:" + Properties.FILE_PATH + "/test.db");
+            Path path = Paths.get("src", "main", "resources", "sqlite.db");
+            c = DriverManager.getConnection("jdbc:sqlite:" + path.toFile().getAbsolutePath());
             LOG.debug("open database successfully");
             stmt = c.createStatement();
         } catch (Exception e) {

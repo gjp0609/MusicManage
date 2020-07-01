@@ -16,20 +16,24 @@
     </padding>
     <HBox spacing="10"
           alignment="bottom_right"
-          GridPane.columnIndex="1"
+          GridPane.columnIndex="0"
           GridPane.rowIndex="1">
-        <Label text="Path: "/>
-        <TextField fx:id="filePath"
-                   text="sad"
+        <Label prefWidth="40" text="Path: "/>
+        <TextField fx:id="filePathTextField"
+                   text="D:\Ent\Music Cate\RHYTHM"
                    prefWidth="400"/>
-        <Button text="Sign In"
+        <Button text="Scan"
+                prefWidth="100"
                 onAction="#handleSubmitButtonAction"/>
     </HBox>
     <ListView fx:id="list"
-              prefHeight="300"
+              prefHeight="350"
               prefWidth="500"
-              GridPane.columnIndex="1"
+              GridPane.columnIndex="0"
               GridPane.rowIndex="2">
+        <GridPane.margin>
+            <Insets top="20"/>
+        </GridPane.margin>
     </ListView>
     <stylesheets>
         <URL value="@App.css"/>

@@ -1,8 +1,8 @@
 package com.onysakura.utils;
 
-import com.onysakura.constans.Properties;
-
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Date;
 import java.util.logging.*;
 
@@ -10,12 +10,13 @@ public class CustomLogger {
 
     private static final int CLASS_NAME_LENGTH_LIMIT = 30;
     private static final boolean IS_SAVE_LOG_FILE = false;
+    private static final Level LOG_FILE_LEVEL = Level.SEVERE;
+    private static final Level LOG_CONSOLE_LEVEL = Level.ALL;
+    static Formatter formatter;
+    static FileHandler fileHandler = null;
 
-    public static Log getLogger(Class<?> loggerName) {
-        Logger logger = Logger.getLogger(loggerName.getName());
-        logger.setUseParentHandlers(false);
-        logger.setLevel(Level.ALL);
-        Formatter formatter = new Formatter() {
+    static {
+        formatter = new Formatter() {
             @Override
             public String format(LogRecord record) {
                 return getColor(record.getLevel()) +
@@ -25,19 +26,27 @@ public class CustomLogger {
                         + record.getMessage() + "\033[0m\n";
             }
         };
+        if (IS_SAVE_LOG_FILE) {
+            Path path = Paths.get("logs");
+            try {
+                fileHandler = new FileHandler(path.toFile().getAbsolutePath() + "/" + DateUtils.format(new Date(), DateUtils.YYYYMMDDHHMMSS) + ".log");
+                fileHandler.setFormatter(formatter);
+                fileHandler.setLevel(LOG_FILE_LEVEL);
+            } catch (IOException ignored) {
+            }
+        }
+    }
+
+    public static Log getLogger(Class<?> loggerName) {
+        Logger logger = Logger.getLogger(loggerName.getName());
+        logger.setUseParentHandlers(false);
+        logger.setLevel(Level.ALL);
         ConsoleHandler consoleHandler = new ConsoleHandler();
         consoleHandler.setFormatter(formatter);
-        consoleHandler.setLevel(Level.ALL);
+        consoleHandler.setLevel(LOG_CONSOLE_LEVEL);
         logger.addHandler(consoleHandler);
-        if (IS_SAVE_LOG_FILE) {
-            try {
-                FileHandler fileHandler = new FileHandler(Properties.FILE_PATH + "/" + DateUtils.format(new Date(), DateUtils.YYYYMMDDHHMMSS) + ".log");
-                fileHandler.setFormatter(formatter);
-                fileHandler.setLevel(Level.ALL);
-                logger.addHandler(fileHandler);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        if (IS_SAVE_LOG_FILE && fileHandler != null) {
+            logger.addHandler(fileHandler);
         }
         return new Log(logger);
     }

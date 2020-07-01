@@ -4,9 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.math.BigInteger;
 import java.security.MessageDigest;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 public class FileUtils {
     private static final CustomLogger.Log LOG = CustomLogger.getLogger(FileUtils.class);
@@ -20,6 +18,11 @@ public class FileUtils {
             }
         }
         return list;
+    }
+
+    public static boolean exists(String path) {
+        File file = new File(path);
+        return file.exists();
     }
 
     public static String getMD5(File file) {

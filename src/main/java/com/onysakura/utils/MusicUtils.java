@@ -15,7 +15,7 @@ import java.nio.file.Paths;
 import java.util.List;
 
 public class MusicUtils {
-    private static final CustomLogger.Log LOG = CustomLogger.getLogger(FileUtils.class);
+    private static final CustomLogger.Log LOG = CustomLogger.getLogger(MusicUtils.class);
 
     public static MusicLocal getMusicInfo(File file) {
         if (file != null) {
@@ -23,8 +23,9 @@ public class MusicUtils {
             musicLocal.setName(file.getName());
             musicLocal.setSize(String.valueOf(file.length()));
             musicLocal.setPath(file.getAbsolutePath());
-            musicLocal.setMd5(FileUtils.getMD5(file));
+//            musicLocal.setMd5(FileUtils.getMD5(file));
             musicLocal.setType(getFileType(file).toString());
+            LOG.debug("get music info: " + musicLocal);
             return musicLocal;
         }
         return null;
