@@ -2,7 +2,6 @@ package com.onysakura.fx;
 
 import com.onysakura.utils.CustomLogger;
 import javafx.application.Application;
-import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXMLLoader;
@@ -10,7 +9,8 @@ import javafx.geometry.Rectangle2D;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.SnapshotParameters;
-import javafx.scene.effect.*;
+import javafx.scene.effect.BoxBlur;
+import javafx.scene.effect.ColorAdjust;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
 import javafx.scene.layout.*;
@@ -27,14 +27,13 @@ import java.nio.file.Paths;
 public class App extends Application {
 
     private static final CustomLogger.Log LOG = CustomLogger.getLogger(App.class);
-
+    private static final boolean USE_JMETRO = false;
     private static final int BLUR_PIXEL = 200;
     private GridPane rootPane;
     private WritableImage snapshot;
     private Stage stage;
     private int screenWidth;
     private int screenHeight;
-
 
     @Override
     public void start(Stage stage) throws Exception {
@@ -49,18 +48,22 @@ public class App extends Application {
         AppController appController = loader.getController();
         this.stage = stage;
         rootPane = appController.rootPane;
-        createScreenCapture();
         Scene scene = new Scene(layout, 300, 500, Color.TRANSPARENT);
-        Platform.setImplicitExit(false);
-        JMetro jMetro = new JMetro(Style.LIGHT);
-        jMetro.setScene(scene);
+        // Platform.setImplicitExit(false);
+        if (USE_JMETRO) {
+            createScreenCapture();
+            JMetro jMetro = new JMetro(Style.LIGHT);
+            jMetro.setScene(scene);
+        }
         stage.setTitle("Hello World!");
         stage.setScene(scene);
         stage.setMinWidth(300D);
         stage.setMinHeight(400D);
         stage.show();
-        setBackground(false);
-        handleStageMove(stage);
+        if (USE_JMETRO) {
+            setBackground(false);
+            handleStageMove(stage);
+        }
     }
 
 
@@ -71,7 +74,6 @@ public class App extends Application {
         stage.xProperty().addListener(stageSizeListener);
         stage.yProperty().addListener(stageSizeListener);
         stage.focusedProperty().addListener((observable, oldValue, newValue) -> {
-            LOG.debug(oldValue + "->" + newValue);
             if (newValue) {
                 stage.setOpacity(0);
                 setBackground(true);
@@ -90,7 +92,7 @@ public class App extends Application {
             BoxBlur boxBlur = new BoxBlur(BLUR_PIXEL, BLUR_PIXEL, 3);
             imageView.setEffect(boxBlur);
             ColorAdjust colorAdjust = new ColorAdjust();
-            colorAdjust.setBrightness(0.5);
+            colorAdjust.setBrightness(0.3);
             boxBlur.setInput(colorAdjust);
             SnapshotParameters parameters = new SnapshotParameters();
             snapshot = imageView.snapshot(parameters, writableImage);

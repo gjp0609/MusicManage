@@ -1,11 +1,9 @@
 #nameLabel {
     -fx-font-size: 14;
-    -fx-font-family: "Sarasa Mono SC";
 }
 
 #artLabel {
     -fx-font-size: 12;
-    -fx-font-family: "Sarasa Mono SC";
 }
 
 .separator {

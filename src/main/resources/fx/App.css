@@ -1,10 +1,9 @@
 @font-face {
-    font-family: 'Sarasa Mono SC';
-    src: url('./sarasa-mono-sc-regular.ttf');
+    src: url('./Sarasa.ttf');
 }
 
-.root {
-    -fx-font-family: "Sarasa Mono SC";
+.root{
+    -fx-font-family: 'Sarasa Mono SC';
 }
 
 .pathTextLabel {

@@ -26,11 +26,11 @@
           GridPane.rowIndex="0">
         <Label text="Path: "
                styleClass="pathTextLabel"
-               prefWidth="40"
-               minWidth="40"
+               prefWidth="50"
+               minWidth="50"
         />
         <TextField fx:id="filePathTextField"
-                   text="C:/Files/Music"
+                   text="D:/Ent/flac"
                    HBox.hgrow="ALWAYS"
                    prefHeight="30"
                    prefWidth="400"

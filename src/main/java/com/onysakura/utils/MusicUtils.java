@@ -3,7 +3,6 @@ package com.onysakura.utils;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.onysakura.constants.Constants;
 import com.onysakura.constants.FileType;
 import com.onysakura.model.MusicLocal;
 
@@ -47,22 +46,22 @@ public class MusicUtils {
 
     public static String getMusicInfo(String name) {
         if (!StringUtils.isBlank(name) && name.contains("-")) {
-            boolean inWhiteList = false;
+//            boolean inWhiteList = false;
             String art = "";
             String songName = "";
-            for (String artist : Constants.ARTIST_WHITE_LIST) {
-                if (name.toLowerCase().startsWith(artist.toLowerCase())) {
-                    art = name.substring(0, artist.length());
-                    inWhiteList = true;
-                    songName = name.substring(artist.length() + 3).substring(0, name.substring(artist.length() + 3).lastIndexOf('.'));
-                    break;
-                }
-            }
-            if (!inWhiteList) {
-                int index = name.indexOf('-');
-                art = name.substring(0, index - 1);
-                songName = name.substring(index + 2).substring(0, name.substring(index + 2).lastIndexOf('.'));
-            }
+//            for (String artist : Constants.ARTIST_WHITE_LIST) {
+//                if (name.toLowerCase().startsWith(artist.toLowerCase())) {
+//                    art = name.substring(0, artist.length());
+//                    inWhiteList = true;
+//                    songName = name.substring(artist.length() + 3).substring(0, name.substring(artist.length() + 3).lastIndexOf('.'));
+//                    break;
+//                }
+//            }
+//            if (!inWhiteList) {
+                int index = name.indexOf(" - ");
+                art = name.substring(0, index);
+                songName = name.substring(index + 3).substring(0, name.substring(index + 3).lastIndexOf('.'));
+//            }
             LOG.debug("music name: [" + name + "], art: [" + art + "], song: [" + songName + "]");
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("art", art);
