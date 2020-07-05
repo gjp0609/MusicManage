@@ -9,33 +9,30 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.GridPane;
 
-import java.awt.*;
 import java.io.File;
+import java.net.URL;
 import java.util.List;
+import java.util.ResourceBundle;
 
-public class AppController {
+public class AppController implements Initializable {
     private static final CustomLogger.Log LOG = CustomLogger.getLogger(AppController.class);
     @FXML
     public TextField filePathTextField;
     @FXML
     public ListView<MusicItem> list;
+    @FXML
+    public GridPane rootPane;
     ObservableList<MusicItem> observableList = FXCollections.observableArrayList();
 
-//    Service<Integer> service = new Service<>() {
-//        @Override
-//        protected Task<Integer> createTask() {
-//            return new Task<>() {
-//                @Override
-//                protected Integer call() throws Exception {
-//
-//                    return null;
-//                }
-//            };
-//        }
-//    };
+    @Override
+    public void initialize(URL url, ResourceBundle resourceBundle) {
+        list.setStyle("-fx-background-color: null");
+    }
 
     public void handleSubmitButtonAction(ActionEvent actionEvent) throws Exception {
         observableList.clear();

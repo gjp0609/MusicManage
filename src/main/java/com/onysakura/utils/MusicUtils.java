@@ -3,9 +3,9 @@ package com.onysakura.utils;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.onysakura.constans.FileType;
+import com.onysakura.constants.Constants;
+import com.onysakura.constants.FileType;
 import com.onysakura.model.MusicLocal;
-import com.onysakura.repository.MusicRepository;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -23,7 +23,7 @@ public class MusicUtils {
             musicLocal.setName(file.getName());
             musicLocal.setSize(String.valueOf(file.length()));
             musicLocal.setPath(file.getAbsolutePath());
-//            musicLocal.setMd5(FileUtils.getMD5(file));
+            musicLocal.setInfo(getMusicInfo(file.getName()));
             musicLocal.setType(getFileType(file).toString());
             LOG.debug("get music info: " + musicLocal);
             return musicLocal;
@@ -45,8 +45,35 @@ public class MusicUtils {
         return FileType.OTHERS;
     }
 
+    public static String getMusicInfo(String name) {
+        if (!StringUtils.isBlank(name) && name.contains("-")) {
+            boolean inWhiteList = false;
+            String art = "";
+            String songName = "";
+            for (String artist : Constants.ARTIST_WHITE_LIST) {
+                if (name.toLowerCase().startsWith(artist.toLowerCase())) {
+                    art = name.substring(0, artist.length());
+                    inWhiteList = true;
+                    songName = name.substring(artist.length() + 3).substring(0, name.substring(artist.length() + 3).lastIndexOf('.'));
+                    break;
+                }
+            }
+            if (!inWhiteList) {
+                int index = name.indexOf('-');
+                art = name.substring(0, index - 1);
+                songName = name.substring(index + 2).substring(0, name.substring(index + 2).lastIndexOf('.'));
+            }
+            LOG.debug("music name: [" + name + "], art: [" + art + "], song: [" + songName + "]");
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("art", art);
+            jsonObject.put("name", songName);
+            return jsonObject.toString();
+        }
+        return null;
+    }
+
     public static void analyze163List() throws Exception {
-        Path path = Paths.get("src", "main", "resources", "jp.json");
+        Path path = Paths.get("src", "main", "resources", "playlist/jp.json");
         BufferedReader reader = Files.newBufferedReader(path);
         String line = reader.readLine();
         JSONObject jsonObject = JSON.parseObject(line);
@@ -62,14 +89,9 @@ public class MusicUtils {
     }
 
     public static void main(String[] args) throws Exception {
-        MusicRepository musicRepository = MusicRepository.getInstance();
-        List<MusicLocal> list = musicRepository.selectAll();
-        LOG.info(JSON.toJSONString(list));
-        MusicLocal local = new MusicLocal();
-        local.setName("3");
-        list = musicRepository.select(local);
-        LOG.info(JSON.toJSONString(list));
-        int delete = musicRepository.delete("726811370237984768");
-        LOG.info(delete);
+        List<File> fileList = FileUtils.getFileList(new File("/Files/Music"));
+        for (File file : fileList) {
+            System.err.println(getMusicInfo(getMusicInfo(file).getName()));
+        }
     }
 }

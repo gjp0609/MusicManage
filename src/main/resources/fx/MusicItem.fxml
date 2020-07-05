@@ -1,15 +1,50 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
-<?import java.util.*?>
-<?import javafx.scene.*?>
-<?import javafx.scene.control.*?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
 <?import javafx.scene.layout.*?>
-
 <?import javafx.scene.text.Text?>
-<GridPane xmlns="http://javafx.com/javafx"
+<?import java.net.URL?>
+<GridPane fx:id="rootPane"
+          xmlns="http://javafx.com/javafx"
           xmlns:fx="http://javafx.com/fxml"
           fx:controller="com.onysakura.fx.MusicItemController"
-          prefHeight="50" prefWidth="500">
-    <Text fx:id="musicNameText" onMouseClicked="#musicNameTextClickHandler"/>
+          alignment="CENTER_RIGHT"
+          prefHeight="50"
+          prefWidth="200"
+          maxWidth="Infinity"
+          GridPane.hgrow="ALWAYS"
+          onMouseClicked="#musicNameTextClickHandler">
+    <columnConstraints>
+        <ColumnConstraints prefWidth="150" hgrow="SOMETIMES"/>
+        <ColumnConstraints prefWidth="50"/>
+    </columnConstraints>
+    <Label fx:id="nameLabel"
+           prefHeight="24"
+           GridPane.rowIndex="0"
+           GridPane.columnIndex="0"
+           GridPane.hgrow="ALWAYS"
+    />
+    <Label fx:id="artLabel"
+           prefHeight="24"
+           GridPane.rowIndex="1"
+           GridPane.columnIndex="0"
+    />
+    <Label fx:id="typeLabel"
+           prefHeight="48"
+           GridPane.rowIndex="0"
+           GridPane.columnIndex="1"
+           GridPane.rowSpan="2"
+    />
+    <Separator
+            prefHeight="2"
+            prefWidth="200"
+            GridPane.hgrow="ALWAYS"
+            GridPane.rowIndex="2"
+            GridPane.columnIndex="0"
+            GridPane.columnSpan="2"
+    />
+    <stylesheets>
+        <URL value="@MusicItem.css"/>
+    </stylesheets>
 </GridPane>

@@ -1,6 +1,6 @@
 package com.onysakura.model;
 
-import com.onysakura.constans.FileType;
+import com.onysakura.constants.FileType;
 import lombok.Data;
 import lombok.ToString;
 
@@ -12,7 +12,7 @@ public class MusicLocal {
     private String name;
     private String size;
     private String path;
-    private String md5;
+    private String info;
     private FileType type;
 
     public FileType getType() {

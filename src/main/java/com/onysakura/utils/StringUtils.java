@@ -1,5 +1,8 @@
 package com.onysakura.utils;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class StringUtils {
 
     private static final CustomLogger.Log LOG = CustomLogger.getLogger(StringUtils.class);
@@ -11,6 +14,32 @@ public class StringUtils {
     public static String getNextId() {
         long nextId = SNOWFLAKE_ID_WORKER.nextId();
         return String.valueOf(nextId);
+    }
+
+    public static List<String> splitString(String src, char split) {
+        List<String> list = new ArrayList<>();
+        if (isEmpty(src)) {
+            return list;
+        }
+        StringBuilder temp = new StringBuilder();
+        for (char c : src.toCharArray()) {
+            if (split == c) {
+                list.add(temp.toString());
+                temp = new StringBuilder();
+            } else {
+                temp.append(c);
+            }
+        }
+        list.add(temp.toString());
+        return list;
+    }
+
+    public static boolean isEmpty(CharSequence sequence) {
+        return sequence == null || sequence.toString().isEmpty();
+    }
+
+    public static boolean isBlank(CharSequence sequence) {
+        return sequence == null || sequence.toString().isBlank();
     }
 
     /**

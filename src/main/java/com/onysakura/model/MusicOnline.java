@@ -1,6 +1,6 @@
 package com.onysakura.model;
 
-import com.onysakura.constans.FileType;
+import com.onysakura.constants.FileType;
 import lombok.Data;
 import lombok.ToString;
 
