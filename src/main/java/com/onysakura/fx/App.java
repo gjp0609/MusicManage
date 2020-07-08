@@ -2,6 +2,7 @@ package com.onysakura.fx;
 
 import com.onysakura.utils.CustomLogger;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXMLLoader;
@@ -49,7 +50,7 @@ public class App extends Application {
         this.stage = stage;
         rootPane = appController.rootPane;
         Scene scene = new Scene(layout, 300, 500, Color.TRANSPARENT);
-        // Platform.setImplicitExit(false);
+        Platform.setImplicitExit(false);
         if (USE_JMETRO) {
             createScreenCapture();
             JMetro jMetro = new JMetro(Style.LIGHT);

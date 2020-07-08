@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.text.Text?>
 <?import java.net.URL?>
 <GridPane fx:id="rootPane"
           xmlns="http://javafx.com/javafx"
@@ -13,8 +11,8 @@
           prefHeight="50"
           prefWidth="200"
           maxWidth="Infinity"
-          GridPane.hgrow="ALWAYS"
-          onMouseClicked="#musicNameTextClickHandler">
+          maxHeight="Infinity"
+          GridPane.hgrow="ALWAYS">
     <columnConstraints>
         <ColumnConstraints prefWidth="150" hgrow="SOMETIMES"/>
         <ColumnConstraints prefWidth="50"/>
@@ -36,13 +34,22 @@
            GridPane.columnIndex="1"
            GridPane.rowSpan="2"
     />
-    <Separator
-            prefHeight="2"
-            prefWidth="200"
-            GridPane.hgrow="ALWAYS"
-            GridPane.rowIndex="2"
-            GridPane.columnIndex="0"
-            GridPane.columnSpan="2"
+    <ListView fx:id="musicLocalListView"
+              maxWidth="Infinity"
+              visible="false"
+              prefHeight="200"
+              GridPane.vgrow="ALWAYS"
+              GridPane.hgrow="ALWAYS"
+              GridPane.rowIndex="3"
+              GridPane.columnIndex="0">
+    </ListView>
+    <Separator fx:id="separator"
+               prefHeight="2"
+               prefWidth="200"
+               GridPane.hgrow="ALWAYS"
+               GridPane.rowIndex="2"
+               GridPane.columnIndex="0"
+               GridPane.columnSpan="2"
     />
     <stylesheets>
         <URL value="@MusicItem.css"/>

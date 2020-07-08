@@ -88,20 +88,25 @@ public class AppController implements Initializable {
             LOG.info("load local music from: " + filePath);
             List<File> fileList = FileUtils.getFileList(new File(filePath));
             LOG.info("find " + fileList.size() + " songs");
-            Platform.runLater(()->{
-                for (File file : fileList) {
-                    MusicLocal musicLocal = MusicUtils.getMusicInfo(file);
-                    if (musicLocal != null) {
-                        for (MusicItem musicItem : observableList) {
-                            MusicOnline musicOnline = musicItem.getMusicOnline();
-                            int levenshtein = StringUtils.levenshtein(musicOnline.getOnlineName(), musicLocal.getOnlineName());
-                            if (levenshtein > 80) {
-                                musicItem.setMusicLocal(musicLocal);
+            Task<Void> task = new Task<>() {
+                @Override
+                protected Void call() throws Exception {
+                    for (File file : fileList) {
+                        MusicLocal musicLocal = MusicUtils.getMusicInfo(file);
+                        if (musicLocal != null) {
+                            for (MusicItem musicItem : observableList) {
+                                MusicOnline musicOnline = musicItem.getMusicOnline();
+                                int levenshtein = StringUtils.levenshtein(musicOnline.getOnlineName(), musicLocal.getOnlineName());
+                                if (levenshtein > 80) {
+                                    Platform.runLater(() -> musicItem.setMusicLocal(musicLocal));
+                                }
                             }
                         }
                     }
+                    return null;
                 }
-            });
+            };
+            new Thread(task).start();
         } else {
             LOG.warn("file not exists: " + filePath);
         }
