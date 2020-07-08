@@ -1,5 +1,6 @@
 package com.onysakura.repository;
 
+import com.onysakura.constants.Constants;
 import com.onysakura.model.TableName;
 import com.onysakura.utils.CustomLogger;
 import com.onysakura.utils.StringUtils;
@@ -11,7 +12,9 @@ import java.lang.reflect.Type;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public class BaseRepository<T> {
 
@@ -19,6 +22,7 @@ public class BaseRepository<T> {
 
     private final String tableName;
     private final String[] fieldNames;
+    private final Class<T> modelClass;
 
     @SuppressWarnings({"unchecked"})
     public Class<T> getModelClass() {
@@ -31,8 +35,11 @@ public class BaseRepository<T> {
         }
     }
 
-    public BaseRepository() {
-        Class<T> modelClass = getModelClass();
+    public BaseRepository(Class<T> modelClass) {
+        if (modelClass == null) {
+            modelClass = getModelClass();
+        }
+        this.modelClass = modelClass;
         Field[] fields = modelClass.getDeclaredFields();
         fieldNames = new String[fields.length];
         for (int i = 0; i < fields.length; i++) {
@@ -45,16 +52,16 @@ public class BaseRepository<T> {
 
     public void createTable() {
         String sql = "CREATE TABLE IF NOT EXISTS $TABLE_NAME ($CONTENT);";
-        StringBuilder content = new StringBuilder();
+        List<String> content = new ArrayList<>();
         for (String fieldName : fieldNames) {
             if ("ID".equalsIgnoreCase(fieldName)) {
-                content.append(" TEXT PRIMARY KEY NOT NULL, ");
+                content.add("ID TEXT PRIMARY KEY NOT NULL");
             } else {
-                content.append(fieldName).append(" TEXT, ");
+                content.add(fieldName + " TEXT");
             }
         }
         sql = sql.replace("$TABLE_NAME", this.tableName)
-                .replace("$CONTENT", content.toString().substring(0, content.length() - 2));
+                .replace("$CONTENT", String.join(", ", content));
         LOG.debug("create table sql: " + sql);
         int i = SQLite.executeUpdate(sql);
         if (i >= 0) {
@@ -69,14 +76,27 @@ public class BaseRepository<T> {
         sql = sql.replace("$TABLE_NAME", tableName);
         LOG.debug("select sql: " + sql);
         ResultSet resultSet = SQLite.executeQuery(sql);
-        Class<T> modelClass = getModelClass();
+        return getResultList(resultSet, modelClass);
+    }
+
+    public List<T> selectAll(LinkedHashMap<String, Constants.Sort> sort) {
+        if (sort == null || sort.isEmpty()) {
+            return selectAll();
+        }
+        String sql = "SELECT * FROM $TABLE_NAME ORDER BY $ORDER;";
+        ArrayList<String> order = new ArrayList<>();
+        for (Map.Entry<String, Constants.Sort> sortEntry : sort.entrySet()) {
+            order.add(StringUtils.humpToUnderline(sortEntry.getKey()) + " " + sortEntry.getValue().toString());
+        }
+        sql = sql.replace("$TABLE_NAME", tableName)
+                .replace("$ORDER", String.join(", ", order));
+        LOG.debug("select sql: " + sql);
+        ResultSet resultSet = SQLite.executeQuery(sql);
         return getResultList(resultSet, modelClass);
     }
 
     public List<T> select(T model) {
-        Class<T> modelClass = getModelClass();
-        String sql = "SELECT * FROM $TABLE_NAME WHERE $QUERIES;";
-        StringBuilder queries = new StringBuilder();
+        List<String> queries = new ArrayList<>();
         boolean hasQueries = false;
         for (String fieldName : fieldNames) {
             try {
@@ -84,21 +104,55 @@ public class BaseRepository<T> {
                 Object invoke = method.invoke(model);
                 if (invoke != null) {
                     hasQueries = true;
-                    queries.append(fieldName).append(" = '").append(invoke.toString()).append("', ");
+                    queries.add(fieldName + " = '" + SQLite.escape(invoke.toString()) + "'");
                 }
             } catch (ReflectiveOperationException e) {
                 e.printStackTrace();
             }
         }
-        if (hasQueries) {
-            sql = sql.replace("$TABLE_NAME", tableName)
-                    .replace("$QUERIES", queries.toString().substring(0, queries.length() - 2));
-            LOG.debug("select sql: " + sql);
-            ResultSet resultSet = SQLite.executeQuery(sql);
-            return getResultList(resultSet, modelClass);
-        } else {
+        if (!hasQueries) {
             return selectAll();
         }
+        String sql = "SELECT * FROM $TABLE_NAME WHERE $QUERIES;";
+        sql = sql.replace("$TABLE_NAME", tableName)
+                .replace("$QUERIES", String.join(", ", queries));
+        LOG.debug("select sql: " + sql);
+        ResultSet resultSet = SQLite.executeQuery(sql);
+        return getResultList(resultSet, modelClass);
+    }
+
+    public List<T> select(T model, LinkedHashMap<String, Constants.Sort> sort) {
+        if (sort == null || sort.isEmpty()) {
+            return select(model);
+        }
+        List<String> queries = new ArrayList<>();
+        boolean hasQueries = false;
+        for (String fieldName : fieldNames) {
+            try {
+                Method method = modelClass.getDeclaredMethod(generateGetMethodName(fieldName));
+                Object invoke = method.invoke(model);
+                if (invoke != null) {
+                    hasQueries = true;
+                    queries.add(fieldName + " = '" + SQLite.escape(invoke.toString()) + "'");
+                }
+            } catch (ReflectiveOperationException e) {
+                e.printStackTrace();
+            }
+        }
+        if (!hasQueries) {
+            return selectAll(sort);
+        }
+        String sql = "SELECT * FROM $TABLE_NAME WHERE $QUERIES ORDER BY $ORDER;";
+        ArrayList<String> order = new ArrayList<>();
+        for (Map.Entry<String, Constants.Sort> sortEntry : sort.entrySet()) {
+            order.add(StringUtils.humpToUnderline(sortEntry.getKey()) + " " + sortEntry.getValue().toString());
+        }
+        sql = sql.replace("$TABLE_NAME", tableName)
+                .replace("$QUERIES", String.join(", ", queries))
+                .replace("$ORDER", String.join(", ", order));
+        LOG.debug("select sql: " + sql);
+        ResultSet resultSet = SQLite.executeQuery(sql);
+        return getResultList(resultSet, modelClass);
     }
 
     public T insert(T t) {
@@ -113,21 +167,20 @@ public class BaseRepository<T> {
         }
         LOG.debug("insert " + (info == null ? t.getClass().getName() : info));
         String sql = "INSERT INTO $TABLE_NAME ($FIELDS) VALUES ($VALUES);";
-        Class<T> modelClass = getModelClass();
-        StringBuilder fields = new StringBuilder();
-        StringBuilder values = new StringBuilder();
+        List<String> fields = new ArrayList<>();
+        List<String> values = new ArrayList<>();
         try {
             Method setId = modelClass.getDeclaredMethod("setId", String.class);
             setId.invoke(t, StringUtils.getNextId());
             for (String fieldName : fieldNames) {
-                fields.append(fieldName).append(", ");
+                fields.add(fieldName);
                 String methodName = generateGetMethodName(fieldName);
                 Method method = modelClass.getMethod(methodName);
                 Object invoke = method.invoke(t);
                 if (invoke == null) {
-                    values.append("NULL, ");
+                    values.add("NULL");
                 } else {
-                    values.append("'").append(invoke.toString()).append("', ");
+                    values.add("'" + SQLite.escape(invoke.toString()) + "'");
                 }
             }
         } catch (Exception e) {
@@ -135,8 +188,8 @@ public class BaseRepository<T> {
             e.printStackTrace();
         }
         sql = sql.replace("$TABLE_NAME", tableName)
-                .replace("$FIELDS", fields.toString().substring(0, fields.length() - 2))
-                .replace("$VALUES", values.toString().substring(0, values.length() - 2));
+                .replace("$FIELDS", String.join(", ", fields))
+                .replace("$VALUES", String.join(", ", values));
         LOG.debug("insert sql: " + sql);
         int update = SQLite.executeUpdate(sql);
         if (update >= 0) {
@@ -158,8 +211,7 @@ public class BaseRepository<T> {
         }
         LOG.debug("update " + (info == null ? t.getClass().getName() : info));
         String sql = "UPDATE $TABLE_NAME SET $VALUES WHERE ID = $ID;";
-        Class<T> modelClass = getModelClass();
-        StringBuilder values = new StringBuilder();
+        List<String> values = new ArrayList<>();
         String id = null;
         try {
             Method setId = modelClass.getDeclaredMethod("getId");
@@ -173,7 +225,7 @@ public class BaseRepository<T> {
                     String value;
                     if (invoke != null && !"ID".equalsIgnoreCase(fieldName)) {
                         value = invoke.toString();
-                        values.append(fieldName).append(" = '").append(value).append("', ");
+                        values.add(fieldName + " = '" + SQLite.escape(value) + "'");
                     }
                 }
             }
@@ -184,7 +236,7 @@ public class BaseRepository<T> {
         if (id != null) {
             sql = sql.replace("$TABLE_NAME", tableName)
                     .replace("$ID", id)
-                    .replace("$VALUES", values.toString().substring(0, values.length() - 2));
+                    .replace("$VALUES", String.join(", ", values));
             LOG.debug("update sql: " + sql);
             int update = SQLite.executeUpdate(sql);
             if (update >= 0) {
@@ -221,8 +273,8 @@ public class BaseRepository<T> {
                     list.add(t);
                 }
             } catch (SQLException | ReflectiveOperationException e) {
-                e.printStackTrace();
                 LOG.warn("get result list fail, " + e.getMessage());
+                e.printStackTrace();
             }
         }
         LOG.debug("select result size: " + list.size());

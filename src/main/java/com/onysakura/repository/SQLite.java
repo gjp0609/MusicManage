@@ -72,5 +72,11 @@ public class SQLite {
         }
         return success;
     }
+
+    public static String escape(String keyWord) {
+        keyWord = keyWord.replace("'", "''");
+        return keyWord;
+    }
+
 }
 

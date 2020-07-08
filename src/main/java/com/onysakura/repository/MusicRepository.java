@@ -8,7 +8,7 @@ public class MusicRepository extends BaseRepository<MusicLocal> {
     private static final MusicRepository REPOSITORY = new MusicRepository();
 
     private MusicRepository() {
-        super();
+        super(null);
     }
 
     public static MusicRepository getInstance() {
