@@ -11,7 +11,7 @@ public class CustomLogger {
     private static final int CLASS_NAME_LENGTH_LIMIT = 30;
     private static final boolean IS_SAVE_LOG_FILE = false;
     private static final Level LOG_FILE_LEVEL = Level.SEVERE;
-    private static final Level LOG_CONSOLE_LEVEL = Level.ALL;
+    private static final Level LOG_CONSOLE_LEVEL = Level.INFO;
     static Formatter formatter;
     static FileHandler fileHandler = null;
 

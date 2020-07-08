@@ -66,7 +66,6 @@ public class App extends Application {
         }
     }
 
-
     public void handleStageMove(Stage stage) {
         ChangeListener<Number> stageSizeListener = (observable, oldValue, newValue) -> setBackground(false);
         stage.widthProperty().addListener(stageSizeListener);

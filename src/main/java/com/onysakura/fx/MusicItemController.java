@@ -1,8 +1,7 @@
 package com.onysakura.fx;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import com.onysakura.model.MusicLocal;
+import com.onysakura.model.MusicOnline;
 import com.onysakura.utils.CustomLogger;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -29,26 +28,36 @@ public class MusicItemController implements Initializable {
     @FXML
     private Label nameLabel;
     private MusicLocal musicLocal;
+    private MusicOnline musicOnline;
+    private Tooltip tooltip;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
+        tooltip = new Tooltip();
+        Tooltip.install(rootPane, tooltip);
     }
 
     public void setMusicLocal(MusicLocal musicLocal) {
         this.musicLocal = musicLocal;
-        JSONObject info = JSON.parseObject(musicLocal.getInfo());
-        nameLabel.setText(info.getString("name"));
-        artLabel.setText(info.getString("art"));
         typeLabel.setText(musicLocal.getType().toString());
-
-        Tooltip tooltip = new Tooltip(musicLocal.getName());
-        Tooltip.install(rootPane, tooltip);
+        tooltip.setText(musicOnline.getOnlineName() + "\n" + musicLocal.getPath());
     }
+
+    public void setMusicOnline(MusicOnline musicOnline) {
+        this.musicOnline = musicOnline;
+        nameLabel.setText(musicOnline.getName());
+        artLabel.setText(musicOnline.getArt());
+        typeLabel.setText(musicOnline.getHasLocalFile());
+        tooltip.setText(musicOnline.getOnlineName());
+    }
+
 
     public void musicNameTextClickHandler(MouseEvent mouseEvent) throws Exception {
         if (mouseEvent.getButton().equals(MouseButton.PRIMARY)) {
             if (mouseEvent.getClickCount() == 2) {
-                Desktop.getDesktop().open(new File(musicLocal.getPath()));
+                if (musicLocal != null) {
+                    Desktop.getDesktop().open(new File(musicLocal.getPath()));
+                }
             }
         }
     }

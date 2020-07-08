@@ -1,6 +1,7 @@
 package com.onysakura.fx;
 
 import com.onysakura.model.MusicLocal;
+import com.onysakura.model.MusicOnline;
 import com.onysakura.utils.CustomLogger;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
@@ -16,6 +17,7 @@ public class MusicItem extends GridPane {
     private MusicItemController musicItemController;
 
     private MusicLocal musicLocal;
+    private MusicOnline musicOnline;
 
     public MusicItem() throws Exception {
         LOG.debug("MusicItem init");
@@ -29,5 +31,14 @@ public class MusicItem extends GridPane {
     public void setMusicLocal(MusicLocal musicLocal) {
         this.musicLocal = musicLocal;
         musicItemController.setMusicLocal(musicLocal);
+    }
+
+    public MusicOnline getMusicOnline() {
+        return musicOnline;
+    }
+
+    public void setMusicOnline(MusicOnline musicOnline) {
+        this.musicOnline = musicOnline;
+        musicItemController.setMusicOnline(musicOnline);
     }
 }

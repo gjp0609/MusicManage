@@ -1,5 +1,7 @@
 package com.onysakura.model;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.onysakura.constants.FileType;
 import lombok.Data;
 import lombok.ToString;
@@ -21,5 +23,13 @@ public class MusicLocal {
 
     public void setType(String type) {
         this.type = FileType.getType(type);
+    }
+
+    public String getOnlineName() {
+        if (this.name != null) {
+            return this.name.substring(0, this.name.lastIndexOf('.'));
+        } else {
+            return "";
+        }
     }
 }

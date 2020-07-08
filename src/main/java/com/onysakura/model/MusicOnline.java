@@ -1,6 +1,6 @@
 package com.onysakura.model;
 
-import com.onysakura.constants.FileType;
+import com.onysakura.constants.Constants;
 import lombok.Data;
 import lombok.ToString;
 
@@ -9,18 +9,22 @@ import lombok.ToString;
 @TableName("MUSIC_ONLINE")
 public class MusicOnline {
     private String id;
+    private String art;
     private String name;
-    private String size;
-    private String path;
-    private String md5;
-    private FileType type;
+    private String onlineId;
+    private Constants.HasLocalFile hasLocalFile;
+//    private List<String> localFileId;
 
-    public FileType getType() {
-        return type;
+
+    public String getHasLocalFile() {
+        return hasLocalFile.getCode();
     }
 
-    public void setType(String type) {
-        this.type = FileType.getType(type);
+    public void setHasLocalFile(String hasLocalFile) {
+        this.hasLocalFile = Constants.HasLocalFile.getEnum(hasLocalFile);
     }
 
+    public String getOnlineName() {
+        return this.art + " - " + this.name;
+    }
 }
