@@ -33,12 +33,12 @@ public class AppController implements Initializable {
     @FXML
     public TextField filePathTextField;
     @FXML
-    public ListView<MusicItem> listView;
+    public ListView<MusicItemController> listView;
     @FXML
     public GridPane rootPane;
     @FXML
     public ProgressIndicator progressIndicator;
-    private final ObservableList<MusicItem> observableList = FXCollections.observableArrayList();
+    private final ObservableList<MusicItemController> observableList = FXCollections.observableArrayList();
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -66,8 +66,9 @@ public class AppController implements Initializable {
                 observableList.clear();
                 for (MusicOnline musicOnline : musicOnlineList) {
                     try {
-                        MusicItem musicItem = new MusicItem();
+                        MusicItemController musicItem = new MusicItemController();
                         musicItem.setMusicOnline(musicOnline);
+                        musicItem.setObservableList(observableList);
                         observableList.add(musicItem);
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -94,11 +95,11 @@ public class AppController implements Initializable {
                     for (File file : fileList) {
                         MusicLocal musicLocal = MusicUtils.getMusicInfo(file);
                         if (musicLocal != null) {
-                            for (MusicItem musicItem : observableList) {
+                            for (MusicItemController musicItem : observableList) {
                                 MusicOnline musicOnline = musicItem.getMusicOnline();
                                 int levenshtein = StringUtils.levenshtein(musicOnline.getOnlineName(), musicLocal.getOnlineName());
                                 if (levenshtein > 80) {
-                                    Platform.runLater(() -> musicItem.setMusicLocal(musicLocal));
+                                    Platform.runLater(() -> musicItem.addMusicLocal(musicLocal));
                                 }
                             }
                         }

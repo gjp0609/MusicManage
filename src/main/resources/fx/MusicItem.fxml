@@ -12,7 +12,8 @@
           prefWidth="200"
           maxWidth="Infinity"
           maxHeight="Infinity"
-          GridPane.hgrow="ALWAYS">
+          GridPane.hgrow="ALWAYS"
+          onMouseClicked="#onMouseClickedHandler">
     <columnConstraints>
         <ColumnConstraints prefWidth="150" hgrow="SOMETIMES"/>
         <ColumnConstraints prefWidth="50"/>
@@ -28,7 +29,7 @@
            GridPane.rowIndex="1"
            GridPane.columnIndex="0"
     />
-    <Label fx:id="typeLabel"
+    <Label fx:id="countLabel"
            prefHeight="48"
            GridPane.rowIndex="0"
            GridPane.columnIndex="1"
@@ -37,11 +38,12 @@
     <ListView fx:id="musicLocalListView"
               maxWidth="Infinity"
               visible="false"
-              prefHeight="200"
+              prefHeight="0"
               GridPane.vgrow="ALWAYS"
               GridPane.hgrow="ALWAYS"
               GridPane.rowIndex="3"
-              GridPane.columnIndex="0">
+              GridPane.columnIndex="0"
+              GridPane.columnSpan="2">
     </ListView>
     <Separator fx:id="separator"
                prefHeight="2"

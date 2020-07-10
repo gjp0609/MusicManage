@@ -1,10 +1,10 @@
 package com.onysakura.model;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import com.onysakura.constants.FileType;
 import lombok.Data;
 import lombok.ToString;
+
+import java.util.Objects;
 
 @Data
 @ToString
@@ -31,5 +31,18 @@ public class MusicLocal {
         } else {
             return "";
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        MusicLocal that = (MusicLocal) o;
+        return Objects.equals(path, that.path);
+    }
+
+    @Override
+    public int hashCode() {
+        return path != null ? path.hashCode() : 0;
     }
 }
